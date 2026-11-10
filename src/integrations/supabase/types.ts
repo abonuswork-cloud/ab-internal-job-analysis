@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          analysis: Json
+          applied_on: string
+          company: string
+          created_at: string
+          id: string
+          job_description: string
+          notes: string
+          owner_id: string
+          resume_variant: string
+          role_title: string
+          status: string
+        }
+        Insert: {
+          analysis?: Json
+          applied_on?: string
+          company?: string
+          created_at?: string
+          id?: string
+          job_description: string
+          notes?: string
+          owner_id: string
+          resume_variant: string
+          role_title?: string
+          status?: string
+        }
+        Update: {
+          analysis?: Json
+          applied_on?: string
+          company?: string
+          created_at?: string
+          id?: string
+          job_description?: string
+          notes?: string
+          owner_id?: string
+          resume_variant?: string
+          role_title?: string
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
