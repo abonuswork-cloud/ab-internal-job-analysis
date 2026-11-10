@@ -146,3 +146,37 @@ export const deleteApplication = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const generateCoverLetter = createServerFn({ method: "POST" })
+  .inputValidator((d: { resumeText: string; jd: string; analysis: Analysis }) => {
+    if (!d.jd?.trim() || !d.resumeText?.trim()) throw new Error("Resume and JD required");
+    return d;
+  })
+  .handler(async ({ data }) => {
+    await requireUser();
+    const { generateResponse, GatewayError } = await import("@lovable.dev/ai-gateway");
+    const a = data.analysis;
+    try {
+      const res = await generateResponse({
+        model: "openai/gpt-6-astra",
+        instructions: `Write a tailored cover letter for ${a.role_title} at ${a.company}.
+Rules: plain text, no markdown, 250-380 words, 3-4 paragraphs plus greeting ("Dear Hiring Team,") and sign-off with the candidate's name from the resume.
+Open with why this role/company, reusing language from the provided tailored summary. Middle: 2-3 concrete achievements taken ONLY from the resume, keeping numbers exact, using the JD's exact terminology. Never invent employers, metrics, tools, certifications or scope. Address at most one honest gap constructively (eagerness/adjacent experience), never claiming it. Close confidently with a call to action. No clichés like "I am writing to express".`,
+        input: [{ role: "user", content: `TAILORED SUMMARY:\n${a.tailored_summary}\n\nHONEST GAPS:\n${a.honest_gaps.join("\n")}\n\nRESUME:\n${data.resumeText}\n\n---\nJOB DESCRIPTION:\n${data.jd}` }],
+      });
+      let text = "";
+      for (const item of res.output ?? []) {
+        if (item.type === "message") for (const c of item.content) if (c.type === "output_text") text += c.text;
+      }
+      if (!text.trim()) throw new Error("The AI returned no letter. Try again.");
+      return { letter: text.trim() };
+    } catch (e) {
+      if (e instanceof GatewayError) {
+        console.error("gateway", e.code, e.ids);
+        if (e.code === "rate_limited") throw new Error("Rate limited — wait a minute and retry.");
+        if (e.code === "payment_required") throw new Error("Out of AI credits for this workspace.");
+        throw new Error("AI request failed. Please try again.");
+      }
+      throw e;
+    }
+  });

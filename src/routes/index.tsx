@@ -4,10 +4,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { $getSessionUser } from "@/lib/session";
 import { RESUMES } from "@/lib/resumes";
-import { analyzeJob, saveApplication } from "@/lib/jobs.functions";
+import { analyzeJob, saveApplication, generateCoverLetter } from "@/lib/jobs.functions";
 import type { Analysis } from "@/lib/analysis-types";
 import { AppNav } from "@/components/AppNav";
 import { AnalysisView } from "@/components/AnalysisView";
+import { CopyButton } from "@/components/AppNav";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -39,12 +40,29 @@ function Index() {
   const [saving, setSaving] = useState(false);
   const analyze = useServerFn(analyzeJob);
   const save = useServerFn(saveApplication);
+  const cover = useServerFn(generateCoverLetter);
+  const [letter, setLetter] = useState("");
+  const [writing, setWriting] = useState(false);
+
+  async function writeLetter() {
+    if (!result) return;
+    setWriting(true);
+    try {
+      const r = await cover({ data: { resumeText: texts[variant] ?? "", jd, analysis: result } });
+      setLetter(r.letter);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Cover letter failed");
+    } finally {
+      setWriting(false);
+    }
+  }
 
   async function run() {
     setLoading(true);
     try {
       const a = await analyze({ data: { resumeText: texts[variant] ?? "", jd } });
       setResult(a);
+      setLetter("");
       setCompany(a.company);
       setRole(a.role_title);
     } catch (e) {
@@ -108,7 +126,27 @@ function Index() {
           )}
         </div>
         <div>
-          {result ? <AnalysisView a={result} /> : (
+          {result ? (
+            <div className="space-y-8">
+              <AnalysisView a={result} />
+              <section className="border-t border-border pt-5">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="font-mono text-xs uppercase tracking-widest"><span className="text-accent">06</span> Cover letter</h2>
+                  <div className="flex items-center gap-2">
+                    {letter && <CopyButton text={letter} />}
+                    <Button size="sm" variant="outline" disabled={writing} onClick={writeLetter}>
+                      {writing ? "Writing…" : letter ? "Regenerate" : "Generate cover letter"}
+                    </Button>
+                  </div>
+                </div>
+                {letter ? (
+                  <Textarea className="min-h-[28rem] bg-card text-sm leading-relaxed" value={letter} onChange={(e) => setLetter(e.target.value)} />
+                ) : (
+                  <p className="text-sm text-muted-foreground">Builds a letter for this company from your tailored summary and real resume wins. Edit freely once generated.</p>
+                )}
+              </section>
+            </div>
+          ) : (
             <div className="flex h-full min-h-96 items-center justify-center rounded-sm border border-dashed border-border">
               <p className="max-w-sm text-center text-sm text-muted-foreground">
                 Pick a resume, paste a JD, and run. You'll get the exact ATS taxonomy, what's missing, and rewritten bullets grounded only in your real experience.
