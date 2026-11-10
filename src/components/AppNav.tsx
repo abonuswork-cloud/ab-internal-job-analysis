@@ -1,4 +1,7 @@
 import { Link } from "@tanstack/react-router";
+import { toast } from "sonner";
+
+const LINKEDIN = "https://www.linkedin.com/in/abonus";
 
 export function AppNav({ name }: { name?: string | null }) {
   const cls = "font-mono text-xs uppercase tracking-widest px-3 py-2 border-b-2 border-transparent text-muted-foreground hover:text-foreground";
@@ -14,7 +17,17 @@ export function AppNav({ name }: { name?: string | null }) {
             <Link to="/log" className={cls} activeProps={{ className: "!border-accent !text-foreground" }}>Application log</Link>
           </nav>
         </div>
-        {name && <span className="font-mono text-xs text-muted-foreground">{name}</span>}
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => { navigator.clipboard.writeText(LINKEDIN); toast.success("LinkedIn URL copied"); }}
+            title={LINKEDIN}
+            className="rounded-sm border border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider hover:border-accent hover:text-accent"
+          >
+            Copy LinkedIn URL
+          </button>
+          {name && <span className="font-mono text-xs text-muted-foreground">{name}</span>}
+        </div>
       </div>
     </header>
   );
