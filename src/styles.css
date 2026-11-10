@@ -153,3 +153,35 @@
     color: var(--color-foreground);
   }
 }
+
+/* Job-hunt ledger theme: warm paper, ink, signal orange */
+@theme inline {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+}
+:root {
+  --radius: 0.25rem;
+  --background: oklch(0.975 0.008 85);
+  --foreground: oklch(0.2 0.01 60);
+  --card: oklch(0.995 0.004 85);
+  --card-foreground: oklch(0.2 0.01 60);
+  --popover: oklch(0.995 0.004 85);
+  --popover-foreground: oklch(0.2 0.01 60);
+  --primary: oklch(0.2 0.01 60);
+  --primary-foreground: oklch(0.975 0.008 85);
+  --secondary: oklch(0.93 0.012 85);
+  --secondary-foreground: oklch(0.2 0.01 60);
+  --muted: oklch(0.94 0.01 85);
+  --muted-foreground: oklch(0.48 0.015 60);
+  --accent: oklch(0.68 0.19 45);
+  --accent-foreground: oklch(0.99 0 0);
+  --destructive: oklch(0.55 0.2 27);
+  --success: oklch(0.55 0.13 150);
+  --warning: oklch(0.72 0.15 75);
+  --border: oklch(0.86 0.012 85);
+  --input: oklch(0.86 0.012 85);
+  --ring: oklch(0.68 0.19 45);
+}
+body { font-family: var(--font-sans); }
