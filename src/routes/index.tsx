@@ -76,7 +76,7 @@ function Index() {
     if (!result) return;
     setSaving(true);
     try {
-      await save({ data: { company, role_title: role, resume_variant: variant, job_description: jd, analysis: result, applied_on: appliedOn, notes: "" } });
+      await save({ data: { company, role_title: role, resume_variant: variant, job_description: jd, analysis: result, applied_on: appliedOn, notes: "", cover_letter: letter } });
       toast.success("Saved to application log");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Save failed");

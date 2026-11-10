@@ -19,6 +19,7 @@ export type Database = {
           analysis: Json
           applied_on: string
           company: string
+          cover_letter: string
           created_at: string
           id: string
           job_description: string
@@ -32,6 +33,7 @@ export type Database = {
           analysis?: Json
           applied_on?: string
           company?: string
+          cover_letter?: string
           created_at?: string
           id?: string
           job_description: string
@@ -45,6 +47,7 @@ export type Database = {
           analysis?: Json
           applied_on?: string
           company?: string
+          cover_letter?: string
           created_at?: string
           id?: string
           job_description?: string

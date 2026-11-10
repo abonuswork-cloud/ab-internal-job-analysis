@@ -1,0 +1,1 @@
+ALTER TABLE public.applications ADD COLUMN IF NOT EXISTS cover_letter text NOT NULL DEFAULT '';

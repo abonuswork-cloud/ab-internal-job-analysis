@@ -101,7 +101,7 @@ export const analyzeJob = createServerFn({ method: "POST" })
   });
 
 export const saveApplication = createServerFn({ method: "POST" })
-  .inputValidator((d: { company: string; role_title: string; resume_variant: string; job_description: string; analysis: Analysis; applied_on: string; notes: string }) => d)
+  .inputValidator((d: { company: string; role_title: string; resume_variant: string; job_description: string; analysis: Analysis; applied_on: string; notes: string; cover_letter?: string }) => d)
   .handler(async ({ data }) => {
     const user = await requireUser();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -127,7 +127,7 @@ export const listApplications = createServerFn({ method: "GET" }).handler(async 
 });
 
 export const updateApplication = createServerFn({ method: "POST" })
-  .inputValidator((d: { id: string; status?: string; notes?: string }) => d)
+  .inputValidator((d: { id: string; status?: string; notes?: string; cover_letter?: string }) => d)
   .handler(async ({ data }) => {
     const user = await requireUser();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
