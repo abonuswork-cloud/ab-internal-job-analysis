@@ -27,7 +27,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const user = Route.useLoaderData();
-  const [variant, setVariant] = useState(RESUMES[0].id);
+  const [variant, setVariant] = useState(RESUMES[0]!.id);
   const [texts, setTexts] = useState<Record<string, string>>(() => Object.fromEntries(RESUMES.map((r) => [r.id, r.text])));
   const [showResume, setShowResume] = useState(false);
   const [jd, setJd] = useState("");
@@ -43,7 +43,7 @@ function Index() {
   async function run() {
     setLoading(true);
     try {
-      const a = await analyze({ data: { resumeText: texts[variant], jd } });
+      const a = await analyze({ data: { resumeText: texts[variant] ?? "", jd } });
       setResult(a);
       setCompany(a.company);
       setRole(a.role_title);

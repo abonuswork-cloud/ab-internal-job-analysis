@@ -28,3 +28,6 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Access is via Lovable workspace identity; every server fn calls getSessionUser and scopes `applications` rows by owner_id = userId using supabaseAdmin (table has RLS with no policies) — why: identity JWTs aren't Cloud auth sessions.
+- Resume variants are static text in src/data/resumes.json extracted from the uploaded PDFs — why: fixed set, editable per session in the UI.
