@@ -4,10 +4,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { $getSessionUser } from "@/lib/session";
-import { listApplications, updateApplication, deleteApplication } from "@/lib/jobs.functions";
+import { listApplications, updateApplication, deleteApplication, generateCoverLetter } from "@/lib/jobs.functions";
 import { getResume } from "@/lib/resumes";
 import { AppNav } from "@/components/AppNav";
 import { AnalysisView } from "@/components/AnalysisView";
+import { CopyButton } from "@/components/AppNav";
+import type { Analysis } from "@/lib/analysis-types";
 
 const STATUSES = ["applied", "screen", "interview", "offer", "rejected", "ghosted"];
 
@@ -76,7 +78,8 @@ function LogPage() {
                     </div>
                     {tab === "jd" ? <pre className="whitespace-pre-wrap rounded-sm border border-border bg-card p-4 text-xs">{r.job_description}</pre> : <AnalysisView a={r.analysis} />}
                   </div>
-                  <div>
+                  <div className="space-y-6">
+                    <div>
                     <label className="mb-2 block font-mono text-xs uppercase tracking-widest">Notes</label>
                     <textarea
                       defaultValue={r.notes}
@@ -84,6 +87,8 @@ function LogPage() {
                       className="h-48 w-full rounded-sm border border-border bg-card p-3 text-sm"
                       placeholder="Recruiter name, salary range, next step…"
                     />
+                    </div>
+                    <LogCoverLetter id={r.id} initial={r.cover_letter ?? ""} resumeText={getResume(r.resume_variant)?.text ?? ""} jd={r.job_description} analysis={r.analysis} onSaved={refresh} />
                   </div>
                 </div>
               )}
@@ -91,6 +96,53 @@ function LogPage() {
           ))}
         </div>
       </main>
+    </div>
+  );
+}
+
+function LogCoverLetter({ id, initial, resumeText, jd, analysis, onSaved }: { id: string; initial: string; resumeText: string; jd: string; analysis: Analysis; onSaved: () => void }) {
+  const gen = useServerFn(generateCoverLetter);
+  const update = useServerFn(updateApplication);
+  const [letter, setLetter] = useState(initial);
+  const [writing, setWriting] = useState(false);
+
+  async function persist(text: string) {
+    await update({ data: { id, cover_letter: text } });
+    onSaved();
+  }
+
+  async function run() {
+    setWriting(true);
+    try {
+      const r = await gen({ data: { resumeText, jd, analysis } });
+      setLetter(r.letter);
+      await persist(r.letter);
+      toast.success("Cover letter saved");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Cover letter failed");
+    } finally {
+      setWriting(false);
+    }
+  }
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between">
+        <label className="font-mono text-xs uppercase tracking-widest">Cover letter</label>
+        <div className="flex gap-2">
+          {letter && <CopyButton text={letter} />}
+          <button type="button" disabled={writing || !resumeText} onClick={run} className="rounded-sm border border-accent px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-accent hover:bg-accent hover:text-accent-foreground disabled:opacity-50">
+            {writing ? "Writing…" : letter ? "Regenerate" : "Generate"}
+          </button>
+        </div>
+      </div>
+      <textarea
+        value={letter}
+        onChange={(e) => setLetter(e.target.value)}
+        onBlur={async () => { if (letter !== initial) { await persist(letter); toast.success("Cover letter saved"); } }}
+        className="h-96 w-full rounded-sm border border-border bg-card p-3 text-sm leading-relaxed"
+        placeholder="Generate a letter tailored to this JD, then edit freely."
+      />
     </div>
   );
 }
