@@ -8,6 +8,13 @@
       "when": 1794340686020,
       "tag": "0000_create_applications",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794341901664,
+      "tag": "0001_add_cover_letter",
+      "breakpoints": true
     }
   ]
 }
