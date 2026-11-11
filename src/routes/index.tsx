@@ -9,6 +9,7 @@ import type { Analysis } from "@/lib/analysis-types";
 import { AppNav } from "@/components/AppNav";
 import { AnalysisView } from "@/components/AnalysisView";
 import { CopyButton } from "@/components/AppNav";
+import { QuestionAnswerer } from "@/components/QuestionAnswerer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -145,6 +146,7 @@ function Index() {
                   <p className="text-sm text-muted-foreground">Builds a letter for this company from your tailored summary and real resume wins. Edit freely once generated.</p>
                 )}
               </section>
+              <QuestionAnswerer resumeText={texts[variant] ?? ""} jd={jd} analysis={result} />
             </div>
           ) : (
             <div className="flex h-full min-h-96 items-center justify-center rounded-sm border border-dashed border-border">
