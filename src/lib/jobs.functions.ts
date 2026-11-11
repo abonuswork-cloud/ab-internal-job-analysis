@@ -180,3 +180,37 @@ Open with why this role/company, reusing language from the provided tailored sum
       throw e;
     }
   });
+
+export const answerQuestion = createServerFn({ method: "POST" })
+  .inputValidator((d: { resumeText: string; jd: string; notes: string; question: string; analysis: Analysis | null }) => {
+    if (!d.question?.trim() || d.question.length > 4000) throw new Error("Enter a question (max 4k chars)");
+    if ((d.notes?.length ?? 0) > 60000) throw new Error("Notes too long (max 60k chars)");
+    return d;
+  })
+  .handler(async ({ data }) => {
+    await requireUser();
+    const { generateResponse, GatewayError } = await import("@lovable.dev/ai-gateway");
+    const a = data.analysis;
+    try {
+      const res = await generateResponse({
+        model: "openai/gpt-6-astra",
+        instructions: `You answer job application questions in the first person as the candidate${a ? ` applying for ${a.role_title} at ${a.company}` : ""}.
+Rules: plain text, no markdown. Answer the question directly. Default 100-200 words unless the question states a limit; respect any stated word/character limit. Use only facts from the RESUME and MY NOTES; keep numbers exact; never invent employers, metrics, tools, certifications or scope. Use the JD's terminology where truthful. If the sources can't support an answer, say so in one line starting with "NEEDS INPUT:" and list what to add.`,
+        input: [{ role: "user", content: `QUESTION:\n${data.question}\n\nMY NOTES:\n${data.notes || "(none)"}\n\n${a ? `TAILORED SUMMARY:\n${a.tailored_summary}\n\n` : ""}RESUME:\n${data.resumeText}\n\n---\nJOB DESCRIPTION:\n${data.jd || "(none)"}` }],
+      });
+      let text = "";
+      for (const item of res.output ?? []) {
+        if (item.type === "message") for (const c of item.content) if (c.type === "output_text") text += c.text;
+      }
+      if (!text.trim()) throw new Error("The AI returned no answer. Try again.");
+      return { answer: text.trim() };
+    } catch (e) {
+      if (e instanceof GatewayError) {
+        console.error("gateway", e.code, e.ids);
+        if (e.code === "rate_limited") throw new Error("Rate limited — wait a minute and retry.");
+        if (e.code === "payment_required") throw new Error("Out of AI credits for this workspace.");
+        throw new Error("AI request failed. Please try again.");
+      }
+      throw e;
+    }
+  });
