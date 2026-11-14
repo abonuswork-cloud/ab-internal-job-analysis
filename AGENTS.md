@@ -29,5 +29,5 @@ use the editor.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
 
-- Access is via Lovable workspace identity; every server fn calls getSessionUser and scopes `applications` rows by owner_id = userId using supabaseAdmin (table has RLS with no policies) — why: identity JWTs aren't Cloud auth sessions.
+- No sign-in: single-user personal tool; getSessionUser falls back to a fixed owner profile and all `applications` rows use that owner_id via supabaseAdmin — why: user chose to bypass the lock.
 - Resume variants are static text in src/data/resumes.json extracted from the uploaded PDFs — why: fixed set, editable per session in the UI.

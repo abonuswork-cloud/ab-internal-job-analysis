@@ -28,7 +28,14 @@ export async function getEnv(): Promise<Record<string, string | undefined>> {
  *
  * Only call in server-side code: route loaders or createServerFn handlers.
  */
+// Personal single-user tool: no sign-in required. Falls back to the owner's profile.
+const OWNER: SessionUser = { userId: "d3bc6408-ed90-5abc-8963-bd711eb60c06", displayName: "Angelica", email: null };
+
 export async function getSessionUser(): Promise<SessionUser | null> {
+  return (await getVerifiedUser()) ?? OWNER;
+}
+
+async function getVerifiedUser(): Promise<SessionUser | null> {
   const request = getRequest();
   if (!request) return null;
 
@@ -40,5 +47,10 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const jwksUrl = env["__LOVABLE_JWKS_URL"];
   if (!jwksUrl) return null;
 
-  return verifyIdentityToken(identityToken, jwksUrl, env["__LOVABLE_PROJECT_ID"]);
+  try {
+    const u = await verifyIdentityToken(identityToken, jwksUrl, env["__LOVABLE_PROJECT_ID"]);
+    return u ? { ...u, userId: OWNER.userId } : null;
+  } catch {
+    return null;
+  }
 }
